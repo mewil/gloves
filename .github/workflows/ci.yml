@@ -11,7 +11,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        model: [6B, 42B.300d, 840B.300d, twitter.27B]
+        model: [
+          { link: 6B, tokens: 6B, dimensions: 50d },
+          { link: 6B, tokens: 6B, dimensions: 100d },
+          { link: 6B, tokens: 6B, dimensions: 200d },
+          { link: 6B, tokens: 6B, dimensions: 300d },
+          { link: 42B.300d, tokens: 42B, dimensions: 300d },
+          { link: 840B.300d, tokens: 840B, dimensions: 300d },
+          { link: twitter.27B, tokens: twitter.27B, dimensions: 25d },
+          { link: twitter.27B, tokens: twitter.27B, dimensions: 50d },
+          { link: twitter.27B, tokens: twitter.27B, dimensions: 100d },
+          { link: twitter.27B, tokens: twitter.27B, dimensions: 200d },
+        ]
 
     steps:
       - name: Check Out Repository
@@ -39,12 +50,15 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
-          build-args: MODEL=${{ matrix.model }}
+          build-args: |
+            LINK=${{ matrix.model.link }}
+            TOKENS=${{ matrix.model.tokens }}
+            DIMENSIONS=${{ matrix.model.dimensions }}
           context: ./
           file: ./Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           push: true
-          tags:  ${{ secrets.DOCKER_HUB_USERNAME }}/gloves:${{ matrix.model }}.latest
+          tags:  ${{ secrets.DOCKER_HUB_USERNAME }}/gloves:${{ matrix.model.tokens }}.${{ matrix.model.dimensions }}.latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
